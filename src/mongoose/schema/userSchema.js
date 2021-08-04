@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const validator = require('validator')
 const { isIncludeSymbols } = require('./../../utilities/validate')
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
 
 
 const usersSchema = mongoose.Schema({
@@ -9,7 +10,7 @@ const usersSchema = mongoose.Schema({
         type: String,
         required: true,
         validate(value) {
-            if (isIncludeSymbols(value)) {
+            if (isIncludeSymbols(value, ['-'])) {
                 throw new Error('first name requires no symbol')
             }
         }
@@ -18,7 +19,7 @@ const usersSchema = mongoose.Schema({
         type: String,
         required: false,
         validate(value) {
-            if (isIncludeSymbols(value)) {
+            if (isIncludeSymbols(value, ['-'])) {
                 throw new Error('last name requires no symbol')
             }
         }
@@ -36,9 +37,15 @@ const usersSchema = mongoose.Schema({
         type: String,
         required: true,
         minLength: 8
-    }
+    },
+    refreshTokens: [{
+        token: {
+            required: true,
+            type: String
+        }
+    }]
 }, {
-    timestamp: true
+    timestamps: true
 })
 
 
@@ -50,6 +57,38 @@ usersSchema.pre('save', function (next) {
         next()
     })
 })
+
+//check user credentials
+usersSchema.statics.checkCredential = async function (password, username) {
+    const validUser = await Users.findOne({ username })
+    if (!validUser) return null
+
+    const isPassMatch = bcrypt.compare(password, validUser.password)
+    if (!isPassMatch)
+        return null
+
+    return validUser
+}
+usersSchema.methods.generateTokens = async function () {
+    let user = this
+
+    const refreshToken = jwt.sign(user._id.toString(), process.env.REFRESH_TOKEN_SECRET)
+    user.refreshTokens.push({ token: refreshToken })
+    await user.save()
+
+    // create access token 
+    user = user.toObject()
+    delete user.password
+    delete user.refreshTokens
+    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: process.env.ACCESS_TOKEN_EXPIRING_SECRET })
+
+    return {
+        sucess: true,
+        loggedIn: true,
+        refreshToken,
+        accessToken
+    }
+}
 
 const Users = mongoose.model('Users', usersSchema)
 

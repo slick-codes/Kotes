@@ -5,7 +5,6 @@ function isIncludeSymbols(str, except = []) {
         throw new Error('exception needs to be an array of symbols')
     str = str.split('')
     const filteredSymbols = symbols.filter(symbol => !except.includes(symbol))
-    console.log(filteredSymbols)
     return str.some(char => filteredSymbols.includes(char))
 }
 

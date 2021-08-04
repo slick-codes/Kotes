@@ -1,32 +1,92 @@
 const app = require('express')
 const router = app.Router()
+const { isEmail } = require('validator')
 
 const usersSchema = require('./../mongoose/schema/userSchema')
 
 const { isBodyExist } = require('./../middlewares/post')
 
-//Signup Rout
-router.post('/signup', isBodyExist, function (req, res) {
-    const { body } = req
+//import authentication function
+const { authentication: auth } = require('./../routes/auth')
 
-    const user = new usersSchema(body)
-    user.save(function (error, user) {
-        if (error) return res.status(500).send({
+const { validateRefreshToken,
+    generateAccessToken,
+    deleteRefreshToken,
+    deleteAllRefreshToken } = require('./../utilities/auth/tokens')
+
+//login middleware
+async function login(req, res) {
+    try {
+        const { password, username } = req.body
+        const validUser = await usersSchema.checkCredential(password, username)
+        if (!validUser) {
+            return res.status(400).send({
+                sucess: false,
+                msg: 'no match found!',
+            })
+        }
+        const tokens = await validUser.generateTokens()
+
+        res.send(tokens)
+    } catch (error) {
+        res.status(400).send({
             sucess: false,
             error,
             strError: error.toString()
         })
+    }
+}
 
-        return res.status(201).send(user)
+//Signup Rout
+router.post('/signup', isBodyExist, function (req, res, next) {
+    const { body } = req
+    console.log(body)
+
+    const user = new usersSchema(body)
+    user.save(function (error, user) {
+        if (error) return res.status(400).send({
+            sucess: false,
+            error,
+            strError: error.toString()
+        })
+        if (!req.query.hasOwnProperty('login'))
+            return res.status(201).send(user)
+        next()
     })
-
-})
+}, login)
 
 
 //Login Rout
-router.post('/login', isBodyExist, function (req, res) {
+router.post('/login', isBodyExist, login)
 
+//Logout Rout
+// you need to parse in an access token header and a refreshtoken header to loggout
+router.post('/logout', auth, async function (req, res) {
+    try {
+        const refreshToken = req.headers['refreshtoken'].replace('Bearer ', '').trim()
 
+        const verifyToken = await validateRefreshToken(refreshToken)
+        if (!verifyToken)
+            throw new Error('invalde token')
+        await deleteRefreshToken(refreshToken)
+        res.status(200).send({
+            sucess: true,
+            status: 200
+        })
+    } catch (error) {
+        res.status(400).send({
+            sucess: false,
+            error,
+            status: 400,
+            strError: error.toString()
+        })
+    }
 })
+
+// get user data
+router.get('/', auth, function (req, res) {
+    res.send(req.user)
+})
+
 
 module.exports = router

@@ -8,6 +8,9 @@ require("dotenv").config();
 //database connection 
 require('./mongoose/db/mongoose')
 
+const tokens = require('./utilities/auth/tokens')
+
+
 
 //routers 
 const userRout = require('./routes/userRout')
@@ -26,7 +29,6 @@ app.use(express.static("public"));
 
 //using Routs
 app.use('/api/users', userRout)
-
 
 
 const PORT = process.env.PORT || 5000;
