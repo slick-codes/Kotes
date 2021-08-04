@@ -1,0 +1,9 @@
+// NOTE to use this you'll need to install REST CLIENT vscode extension
+POST http://localhost:5000/api/users/signup
+Content-Type: application/json
+
+{
+    "firstName": "Paul",
+    "username": "slickcodes",
+    "password": "commingToAmerica"
+}
