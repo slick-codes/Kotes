@@ -3,16 +3,12 @@ const router = app.Router()
 const { isEmail } = require('validator')
 
 const usersSchema = require('./../mongoose/schema/userSchema')
-
 const { isBodyExist } = require('./../middlewares/post')
-
 //import authentication function
-const { authentication: auth } = require('./../routes/auth')
+const { authentication: auth } = require('./../middlewares/auth')
+//importing auth utiltie functions 
+const { validateRefreshToken, deleteRefreshToken } = require('./../utilities/auth/tokens')
 
-const { validateRefreshToken,
-    generateAccessToken,
-    deleteRefreshToken,
-    deleteAllRefreshToken } = require('./../utilities/auth/tokens')
 
 //login middleware
 async function login(req, res) {
@@ -27,7 +23,11 @@ async function login(req, res) {
         }
         const tokens = await validUser.generateTokens()
 
-        res.send(tokens)
+        res.send({
+            sucess: true,
+            status: 201,
+            tokens
+        })
     } catch (error) {
         res.status(400).send({
             sucess: false,
@@ -40,7 +40,6 @@ async function login(req, res) {
 //Signup Rout
 router.post('/signup', isBodyExist, function (req, res, next) {
     const { body } = req
-    console.log(body)
 
     const user = new usersSchema(body)
     user.save(function (error, user) {
@@ -61,7 +60,7 @@ router.post('/login', isBodyExist, login)
 
 //Logout Rout
 // you need to parse in an access token header and a refreshtoken header to loggout
-router.post('/logout', auth, async function (req, res) {
+router.post('/logout', async function (req, res) {
     try {
         const refreshToken = req.headers['refreshtoken'].replace('Bearer ', '').trim()
 
@@ -84,7 +83,7 @@ router.post('/logout', auth, async function (req, res) {
 })
 
 // get user data
-router.get('/', auth, function (req, res) {
+router.get('/me', auth, function (req, res) {
     res.send(req.user)
 })
 

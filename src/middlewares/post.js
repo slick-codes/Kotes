@@ -2,7 +2,6 @@
 
 function isBodyExist(req, res, next) {
     const body = req.body
-    console.log(req.body)
     if (!body) return res.status(400).json({
         msg: 'invalid request',
         sucess: false

@@ -1,27 +1,61 @@
 // NOTE to use this you'll need to install REST CLIENT vscode extension
-POST http://localhost:5000/api/users/signup
+@url = http://localhost:5000/api
+@contentType = application/json
+@refreshToken = {{login.response.body.tokens.refreshToken}}
+@accessToken = {{access.response.body.tokens.accessToken}}
+
+### Create account
+POST {{url}}/users/signup
 Content-Type: application/json
 
 {
-    "firstName": "Paul",
-    "username": "slickcsodes",
-    "password": "commingToAmerica"
+    "firstName": "Mike",
+    "lastName":"Jubily",
+    "username": "jubliks",
+    "password": "jubily"
 }
-###
-//Login Rout
-POST http://localhost:5000/api/users/login
+### Login
+# @name login
+POST {{url}}/users/login
 Content-Type: application/json
 
 {
-    "username":"slickcodes",
-    "password":"slickcodes"
+    "username":"jubliks",
+    "password":"jubily"
 }
 
-###
-POST http://localhost:5000/api/users/logout
-RefreshToken: Bearer eyJhbGciOiJIUzI1NiJ9.NjEwYTU4NTgxN2E3YTA0MjkzNWUxODdm.QZZGgd1lOiM_YwTGrBs9jDvAfkUXLbJKmLjiC_6B1vA
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MTBhNTg1ODE3YTdhMDQyOTM1ZTE4N2YiLCJmaXJzdE5hbWUiOiJQYXVsIiwidXNlcm5hbWUiOiJzbGlja2NvZGVzIiwiX192Ijo5LCJjcmVhdGVkQXQiOiIyMDIxLTA4LTA0VDA4OjA2OjI4LjI2MVoiLCJ1cGRhdGVkQXQiOiIyMDIxLTA4LTA0VDA4OjI0OjIyLjQ1NVoiLCJpYXQiOjE2MjgwNjU0NjIsImV4cCI6MTYyODA2OTA2Mn0.wWEsZ6oZxw4UeC48GCs5LChbpVrzKcPS07fKDS4SzuQ
+### Logout of the accout
+POST {{url}}/users/logout
+RefreshToken: Bearer {{refreshToken}}
+Authorization: Bearer {{accessToken}}
 
 ###
-GET http://localhost:5000/api/users
-Authorization:Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2MTBhNTg1ODE3YTdhMDQyOTM1ZTE4N2YiLCJmaXJzdE5hbWUiOiJQYXVsIiwidXNlcm5hbWUiOiJzbGlja2NvZGVzIiwiX192Ijo5LCJjcmVhdGVkQXQiOiIyMDIxLTA4LTA0VDA4OjA2OjI4LjI2MVoiLCJ1cGRhdGVkQXQiOiIyMDIxLTA4LTA0VDA4OjI0OjIyLjQ1NVoiLCJpYXQiOjE2MjgwNjU0NjIsImV4cCI6MTYyODA2OTA2Mn0.wWEsZ6oZxw4UeC48GCs5LChbpVrzKcPS07fKDS4SzuQ
+GET {{url}}/users/me
+Authorization:Bearer {{accessToken}}
+
+### Generate Access token with refreshtoken
+# @name access
+GET {{url}}/users/createaccess
+RefreshToken: Bearer {{refreshToken}}
+
+### create quotes
+POST {{url}}/quotes/create
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+{
+    "title": "We live to Die",
+    "quote": "Life is nothing but a place to preper for death!"
+}
+### get all my quotes
+GET {{url}}/quotes/me
+Authorization: Bearer {{accessToken}}
+Content-Type: {{contentType}}
+
+###
+GET {{url}}/610bb69bb20480655a93b35b/quotes
+
+
+###
+POST {{url}}/quotes/reaction/610bd21061829c0d17410946?like=true
+Authorization: Bearer {{accessToken}}

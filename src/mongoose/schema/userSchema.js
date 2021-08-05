@@ -72,7 +72,10 @@ usersSchema.statics.checkCredential = async function (password, username) {
 usersSchema.methods.generateTokens = async function () {
     let user = this
 
-    const refreshToken = jwt.sign(user._id.toString(), process.env.REFRESH_TOKEN_SECRET)
+    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: process.env.REFRESH_TOKEN_EXPIREING_SECRET
+    })
+    // console.log(jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET))
     user.refreshTokens.push({ token: refreshToken })
     await user.save()
 
