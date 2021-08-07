@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="KotesReq.js"></script>
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+
+
+    <style>
+        @import url('./style.css');
+
+        nav {
+            display: flex;
+            padding: 0em 10vw;
+            background: rgb(228, 30, 73);
+        }
+
+        nav ul:first-child {
+            margin-right: auto;
+            font-size: 1.8rem;
+            font-weight: bolder;
+            font-family: arial;
+        }
+
+        nav ul {
+            display: flex;
+        }
+
+        nav ul:last-child {
+            align-items: center;
+        }
+
+        nav ul li {
+            padding: .7em 0;
+        }
+
+        nav ul:last-child li:first-child {
+            font-size: 1.5rem;
+            font-weight: bolder;
+            font-family: arial;
+            padding: 0 1em;
+        }
+
+        nav ul:last-child li:last-child {
+            padding: 1em .7em;
+            border: solid 3px black;
+            border-radius: 0.2em;
+            position: relative;
+            cursor: pointer;
+        }
+
+        nav ul:last-child li:last-child:active {
+            border-color: rgb(211, 211, 211);
+            color: rgb(211, 211, 211);
+        }
+
+        nav ul:last-child li:last-child div {
+            height: 0;
+            width: .6em;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        nav ul:last-child li:last-child:active div {
+            background: white;
+        }
+
+        .fullname_container {
+            padding: 1em;
+            text-align: center;
+            font-weight: bolder;
+        }
+
+        #logout {
+            padding: .9em;
+            font-weight: bolder;
+            font-family: arial;
+        }
+    </style>
+
+</head>
+
+<body>
+    <script>
+        const requester = new Requester({
+            baseUrl: ''
+        })
+
+
+
+        // redirecter for when a user isn't authenticated
+        async function load() {
+            const login = 'login.html'
+            const cookie = document.cookie
+            if (!cookie) window.location = login
+
+            // confirm if cookie is a valid cookie
+            //TODO create a rout, and method on the lib to validate refreshToken
+            const refreshToken = document.cookie
+
+            const tokens = await requester.getAccessToken(refreshToken)
+            console.log(tokens)
+            if (!tokens.sucess || !refreshToken) {
+                window.location = login
+            }
+
+        }
+        load()
+    </script>
+    <nav>
+        <ul>
+            <li id="name"></li>
+        </ul>
+        <ul>
+            <li id="name">
+                <button id="logout">Logout</button>
+            </li>
+            <li>
+                <div><i class="fa fa-bars"></i></div>
+            </li>
+        </ul>
+    </nav>
+    <div class="fullname_container"></div>
+
+    <script>
+        const nameHolder = document.querySelector('#name');
+        const fullnameContainer = document.querySelector('.fullname_container')
+
+        async function loadDom() {
+            const user = await requester.getUser()
+            // return console.log(user)
+            nameHolder.innerText = user.username
+            fullnameContainer.innerText = user.firstName + ' ' + user.lastName
+        }
+        loadDom()
+
+        const logoutBtn = document.querySelector('#logout')
+
+        logoutBtn.onclick = function () {
+            requester.logout()
+        }
+    </script>
+</body>
+
+</html>

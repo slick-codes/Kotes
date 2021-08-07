@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="KotesReq.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .form_container {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-flow: column;
+            background: rgb(20, 20, 20);
+        }
+
+        .form_container form {
+            display: flex;
+            flex-flow: column;
+            transform: translateY(-3em);
+        }
+
+        form * {
+            padding: .5em 1em;
+            font-family: arial;
+            font-size: 15px;
+            color: white;
+        }
+
+        form input {
+            border: none;
+            background: rgb(32, 32, 32);
+            border: solid 2px transparent;
+            border-radius: 0.3em;
+            font-weight: bold;
+            color: rgb(206, 206, 206);
+        }
+
+        form input::placeholder {
+            font-weight: normal;
+        }
+
+        form input:focus {
+            color: white;
+            border-color: rgb(228, 21, 83);
+            outline: none;
+        }
+
+        form label {
+            padding-top: 1em;
+            opacity: 0;
+            transition: 0.4s;
+        }
+
+        form label.active {
+            opacity: .5;
+        }
+
+        form button {
+            margin-top: 1em;
+            background: rgb(228, 21, 83);
+            color: white;
+            border-radius: 0.3em;
+            border: none;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+
+        form button:active {
+            background: rgb(148, 14, 54);
+        }
+
+        .form button.submitting {
+            background: rgb(88, 88, 88);
+        }
+
+        .form_container form h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            color: gray;
+            padding: 0;
+            text-transform: uppercase;
+            display: none;
+        }
+
+        .message_info {
+            height: 2.4em;
+            display: flex;
+            align-items: center;
+            padding: 0px 1em;
+            font-weight: bolder;
+            color: rgb(216, 216, 216);
+            border-radius: .3em;
+            opacity: 0;
+        }
+
+        .error {
+            background: linear-gradient(rgb(219, 31, 31), rgb(146, 21, 21));
+            opacity: .8;
+        }
+
+        .good {
+            background: rgb(69 175 112 / 71%);
+            opacity: .8;
+        }
+    </style>
+    <script>
+        const requester = new Requester({
+            baseUrl: ""
+        })
+
+        // redirecter for when a user isn't authenticated
+        async function load() {
+            const login = 'index.html'
+
+            // confirm if cookie is a valid cookie
+            //TODO create a rout, and method on the lib to validate refreshToken
+            const refreshToken = document.cookie
+
+            const tokens = await requester.getAccessToken(refreshToken)
+            if (tokens?.sucess) {
+                window.location = login
+            }
+
+        }
+        window.onload = load
+    </script>
+
+</head>
+
+<body>
+    <div class="form_container">
+        <form method="POST">
+            <div class="message_info">Hello Word</div>
+            <h1>Login</h1>
+            <label for="username" class="name_label">Username</label>
+            <input type="text" placeholder="username" name="username" id="username">
+            <label for="password" class="password_label">Password</label>
+            <input type="password" placeholder="password" id="password" name="password">
+            <button id="loging_btn">login</button>
+            <!-- <hr> -->
+
+        </form>
+        <div class="signup__btn">
+            <a href="register.html">
+                <button class="signup">Signup</button>
+            </a>
+        </div>
+    </div>
+    <script>
+        console.log(requester.baseUrl)
+
+        const labelArr = document.querySelectorAll('label')
+        const inputArr = document.querySelectorAll('input')
+
+        inputArr.forEach(input => {
+
+            input.oninput = function (event) {
+                const id = input.getAttribute('id')
+                labelArr.forEach(label => {
+
+                    if (label.getAttribute('for') === id)
+                        return label.classList.add('active')
+                    if (input.value.trim() === '')
+                        label.classList.remove('active')
+                })
+
+                input.onblur = function (event) {
+                    if (event.target.value.trim() === '') {
+                        labelArr.forEach(label => {
+                            if (label.getAttribute('for') === id) {
+                                label.classList.remove('active')
+                            }
+                        })
+                    }
+                }
+            }
+        })
+
+
+        const submit = document.querySelector('form')
+        const msgBox = document.querySelector('.message_info')
+        const password = document.querySelector('#password')
+        const username = document.querySelector('#username')
+        const submitBtn = document.querySelector('#loging_btn')
+
+        const focused = event => {
+            event.target.select()
+        }
+        password.onfocus = focused
+        username.onfocus = focused
+
+        submit.onsubmit = function (event) {
+            submitBtn.innerText = 'Loading'
+            submitBtn.classList.add('submitting')
+            event.preventDefault()
+
+            setTimeout(function () {
+
+                requester.login({
+                        password: password.value,
+                        username: username.value
+                    },
+                    function (error, data) {
+                        submitBtn.innerText = 'Login'
+                        if (error) {
+                            msgBox.classList.add('error')
+                            msgBox.innerText = 'invalid request ):'
+                            return console.log('there was a compressed error,', error)
+                        }
+                        console.log(data)
+                        if (!data.sucess) {
+                            msgBox.classList.add('error')
+                            msgBox.innerText = data.msg
+                            return data
+                        }
+
+                        requester.save(data.tokens.refreshToken)
+                        window.location = 'index.html'
+                    })
+            }, 1000)
+
+        }
+    </script>
+</body>
+
+</html>

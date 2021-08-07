@@ -2,23 +2,30 @@ const userSchema = require('../../mongoose/schema/userSchema')
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
-
+// check if refersh token is valid 
 async function validateRefreshToken(refreshToken) {
-    // let id, user
+    let id, user
 
     try {
-        var user = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
-        var id = user.id
+        // check if refresh token has not expired
+        user = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET)
+        id = user.id
         user = await userSchema.findById(id)
+        // check if refreshToken exsit in database
+        const isExist = user.refreshTokens.some(token => token.token === refreshToken)
+        return isExist ? user : null
     } catch (error) {
         //remove refreshToken from data base if it has expired
-        console.log('token has expired')
+        user = await userSchema.findOne({
+            "refreshTokens.token": refreshToken
+        })
+        if (!user) return null
+        // remove expired token from database
         user.refreshTokens = user.refreshTokens.filter(tokenObj => tokenObj.token !== refreshToken)
         await user.save()
+        return null
     }
-    // check if refreshToken exsit in database
-    const isExist = user.refreshTokens.some(token => token.token === refreshToken)
-    return isExist ? user : null
+
 }
 
 // delete refreshToken

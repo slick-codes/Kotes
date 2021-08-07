@@ -1,61 +1,65 @@
 // NOTE to use this you'll need to install REST CLIENT vscode extension
-@url = http://localhost:5000/api
-@contentType = application/json
-@refreshToken = {{login.response.body.tokens.refreshToken}}
-@accessToken = {{access.response.body.tokens.accessToken}}
+@baseUrl = http://localhost:5000/api
+@json = application/json
+@refreshToken = {{accessTokens.response.body.tokens.refreshToken}}
+@accessToken = {{accessTokens.response.body.tokens.accessToken}}
+
+@password = {{loginCredentials.password}}
+@username
 
 ### Create account
-POST {{url}}/users/signup
-Content-Type: application/json
+# @name loginCredentials
+POST {{baseUrl}}/users/signup
+Content-Type: {{json}}
 
 {
-    "firstName": "Mike",
-    "lastName":"Jubily",
-    "username": "jubliks",
-    "password": "jubily"
+    "firstName": "Gabriel",
+    "lastName":"Ezekiel-Hart",
+    "username": "gabby",
+    "password": "password"
 }
-### Login
-# @name login
-POST {{url}}/users/login
-Content-Type: application/json
+### Login to a user account
+# @name accessTokens
+POST {{baseUrl}}/users/login
+Content-Type: {{json}}
 
 {
-    "username":"jubliks",
-    "password":"jubily"
+    "username":"slick",
+    "password":"paul92702689"
 }
 
 ### Logout of the accout
-POST {{url}}/users/logout
+POST {{baseUrl}}/users/logout
 RefreshToken: Bearer {{refreshToken}}
 Authorization: Bearer {{accessToken}}
 
-###
-GET {{url}}/users/me
+### Get authenticated user's profile data
+GET {{baseUrl}}/users/me
 Authorization:Bearer {{accessToken}}
 
 ### Generate Access token with refreshtoken
-# @name access
-GET {{url}}/users/createaccess
+# @name accessTokens
+GET {{baseUrl}}/users/createaccess
 RefreshToken: Bearer {{refreshToken}}
 
 ### create quotes
-POST {{url}}/quotes/create
+POST {{baseUrl}}/quotes/create
 Authorization: Bearer {{accessToken}}
-Content-Type: {{contentType}}
+Content-Type: {{json}}
 
 {
     "title": "We live to Die",
     "quote": "Life is nothing but a place to preper for death!"
 }
 ### get all my quotes
-GET {{url}}/quotes/me
+GET {{baseUrl}}/quotes/me
 Authorization: Bearer {{accessToken}}
-Content-Type: {{contentType}}
+Content-Type: {{json}}
 
 ###
-GET {{url}}/610bb69bb20480655a93b35b/quotes
+GET {{baseUrl}}/610bb69bb20480655a93b35b/quotes
 
 
 ###
-POST {{url}}/quotes/reaction/610bd21061829c0d17410946?like=true
+POST {{baseUrl}}/quotes/reaction/610bd21061829c0d17410946?like=true
 Authorization: Bearer {{accessToken}}

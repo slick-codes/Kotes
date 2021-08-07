@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        .form_container {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-flow: column;
+            background: rgb(20, 20, 20);
+        }
+
+        .form_container form {
+            display: flex;
+            flex-flow: column;
+            transform: translateY(-3em);
+        }
+
+        form * {
+            padding: .5em 1em;
+            font-family: arial;
+            font-size: 15px;
+            color: white;
+        }
+
+        form input {
+            border: none;
+            background: rgb(32, 32, 32);
+            border: solid 2px transparent;
+            border-radius: 0.3em;
+            font-weight: bold;
+            color: rgb(206, 206, 206);
+        }
+
+        form input::placeholder {
+            font-weight: normal;
+        }
+
+        form input:focus {
+            color: white;
+            border-color: rgb(228, 21, 83);
+            outline: none;
+        }
+
+        form label {
+            padding-top: 1em;
+            opacity: 0;
+        }
+
+        form label.active {
+            opacity: 1;
+        }
+
+        form button {
+            margin-top: 1em;
+            background: rgb(228, 21, 83);
+            color: white;
+            border-radius: 0.3em;
+            border: none;
+            cursor: pointer;
+            border: none;
+            outline: none;
+        }
+
+        form button:active {
+            background: rgb(148, 14, 54);
+        }
+
+        .form button.submitting {
+            background: rgb(88, 88, 88);
+        }
+
+        .form_container form h1 {
+            text-align: center;
+            font-size: 1.5rem;
+            color: gray;
+            padding: 0;
+            text-transform: uppercase;
+            display: none;
+        }
+
+        .message_info {
+            height: 2.4em;
+            display: flex;
+            align-items: center;
+            padding: 0px 1em;
+            font-weight: bolder;
+            color: rgb(216, 216, 216);
+            border-radius: .3em;
+            opacity: 0;
+        }
+
+        .error {
+            background: linear-gradient(rgb(219, 31, 31), rgb(146, 21, 21));
+            opacity: .8;
+        }
+
+        .good {
+            background: rgb(69 175 112 / 71%);
+            opacity: .8;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="form_container">
+        <form method="POST">
+            <div class="message_info">Hello Word</div>
+            <h1>Login</h1>
+            <label for="firstname" class="name_label">Frist Name</label>
+            <input type="text" id="firstname" placeholder="First Name">
+            <label for="lastname" class="name_label">Last Name</label>
+            <input type="text" id="lastname" name="Last Name" placeholder="Last Name">
+            <label for="username" class="name_label">Username</label>
+            <input type="text" placeholder="username" name="username" id="username">
+            <label for="password" class="password_label">Password</label>
+            <input type="password" placeholder="password" id="password" name="password">
+            <label for="confirmPass">Confirm Password</label>
+            <input type="password" id="confirmPass" placeholder="Confirm Password">
+            <button id="loging_btn">Register</button>
+            <!-- <hr> -->
+
+        </form>
+        <div class="signup__btn">
+            <a href="login.html">
+                <button class="signup">Login</button>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        const labelArr = document.querySelectorAll('label')
+        const inputArr = document.querySelectorAll('input')
+
+        inputArr.forEach(input => {
+
+            input.oninput = function (event) {
+                const id = input.getAttribute('id')
+                labelArr.forEach(label => {
+
+                    if (label.getAttribute('for') === id)
+                        return label.classList.add('active')
+                    if (input.value.trim() === '')
+                        label.classList.remove('active')
+                })
+
+                input.onblur = function (event) {
+                    if (event.target.value.trim() === '') {
+                        labelArr.forEach(label => {
+                            if (label.getAttribute('for') === id) {
+                                label.classList.remove('active')
+                            }
+                        })
+                    }
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>

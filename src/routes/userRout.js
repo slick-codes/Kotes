@@ -26,6 +26,7 @@ async function login(req, res) {
         res.send({
             sucess: true,
             status: 201,
+            msg: 'login sucessful',
             tokens
         })
     } catch (error) {
